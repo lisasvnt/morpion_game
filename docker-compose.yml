@@ -1,0 +1,50 @@
+services:
+  # Base de données MySQL
+  db:
+    image: mysql:8.0
+    container_name: morpion-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: morpion
+      MYSQL_USER: morpionuser
+      MYSQL_PASSWORD: morpionpass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks: 
+      - morpion-network
+    restart: unless-stopped
+
+  # Backend Node.js
+  backend:
+    build: ./backend
+    container_name: backend
+    depends_on:
+      ["db"]
+    environment:
+      DB_HOST: db
+      DB_USER: morpionuser
+      DB_PASSWORD: morpionpass
+      DB_NAME: morpion
+    networks:
+      - morpion-network
+    restart: unless-stopped
+
+  # Frontend avec Nginx
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    depends_on:
+      ["backend"]
+    ports:
+      - "8080:80"
+    networks:
+      - morpion-network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+
+# Réseau Docker pour la communication entre services
+networks:
+  morpion-network:
+    driver: bridge
