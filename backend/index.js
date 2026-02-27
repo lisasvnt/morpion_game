@@ -130,7 +130,7 @@ io.on('connection', (socket) => {
     });
 
     // Ecouter quand un joueur joue
-    socket.on('play', (index) => {
+    socket.on('play', async (index) => {
         console.log('Clic reçu sur la case:', index); 
         // Vérifier que la case est vide
         if (grid[index] === '') {
@@ -141,9 +141,11 @@ io.on('connection', (socket) => {
 
             if(winner) {
                 // Il y a un gagnant
+                await saveGame(winner, grid);
                 io.emit('gameOver', { winner: winner });
             } else if (checkDraw()) {
                 // Match nul
+                await saveGame('draw', grid)
                 io.emit('gameDraw');
             } else {
                 // Changer de joueur
